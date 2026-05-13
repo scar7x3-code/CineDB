@@ -29,13 +29,105 @@ const state = {
   loading:     false,
 };
 
-/* ── Default searches shown on first load ───────────────── */
-const DEFAULT_QUERIES = ['avengers', 'batman', 'breaking bad', 'inception'];
+/**
+ * OMDb search has no popularity sort (only `s`, `type`, `y`, `page`).
+ * Browse mode therefore uses: (1) a fixed-order IMDb spotlight on page 1,
+ * (2) franchise-style title seeds so relevance-heavy results skew famous titles.
+ */
+const TRENDING_BROWSE_YEAR = '2026';
+
+const SPOTLIGHT_IMDB_IDS = {
+  /**
+   * 2026 editorial “trending” slate (fixed order = grid order on page 1).
+   * Super Mario Galaxy: la película → … → Scare Out
+   */
+  trending: [
+    'tt28650488', // The Super Mario Galaxy Movie
+    'tt12042730', // Project Hail Mary
+    'tt38035835', // Pegasus 3
+    'tt11378946', // Michael
+    'tt33612209', // The Devil Wears Prada 2
+    'tt26443616', // Hoppers
+    'tt32897959', // Wuthering Heights (Cumbres Borrascosas)
+    'tt32649961', // Blades of the Guardians
+    'tt27047903', // Scream 7
+    'tt36535318', // Scare Out
+  ],
+  /** Widely known films — editorial “most popular” stand-ins. */
+  movie: [
+    'tt4154796', // Avengers: Endgame
+    'tt0468569', // The Dark Knight
+    'tt0848228', // The Avengers
+    'tt0111161', // The Shawshank Redemption
+    'tt0068646', // The Godfather
+    'tt1375666', // Inception
+  ],
+  series: [
+    'tt0903747', // Breaking Bad
+    'tt0944947', // Game of Thrones
+    'tt4574334', // Stranger Things
+    'tt0386676', // The Office
+    'tt0108778', // Friends
+    'tt1442462', // Better Call Saul
+  ],
+};
+
+const POPULAR_SEARCH_SEEDS = {
+  movie: [
+    'marvel', 'batman', 'avengers', 'spider', 'superman', 'fast', 'jurassic',
+    'mission', 'bond', 'harry',
+  ],
+  series: [
+    'breaking', 'stranger', 'game', 'office', 'friends', 'walking', 'better',
+    'succession', 'sherlock', 'wire',
+  ],
+};
+
+function browseSeedPoolKey() {
+  if (state.type === 'movie') return 'movie';
+  if (state.type === 'series') return 'series';
+  return 'trending';
+}
+
+function pickBrowseSeed() {
+  const key = browseSeedPoolKey();
+  const pool = POPULAR_SEARCH_SEEDS[key];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function spotlightIdsForTab() {
+  const key = browseSeedPoolKey();
+  return SPOTLIGHT_IMDB_IDS[key];
+}
+
+async function fetchMovieSummary(id) {
+  try {
+    const res = await fetch(`/api/movie?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (d.Response === 'False') return null;
+    return {
+      Title:  d.Title,
+      Year:   d.Year,
+      imdbID: d.imdbID,
+      Type:   d.Type,
+      Poster: d.Poster,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchSpotlightSummaries(ids) {
+  const rows = await Promise.all(ids.map(fetchMovieSummary));
+  return rows.filter(Boolean);
+}
 
 /* ── API helpers ────────────────────────────────────────── */
-async function searchMovies(q, type = '', page = 1) {
+async function searchMovies(q, type = '', page = 1, year = '') {
   const params = new URLSearchParams({ q, page });
   if (type) params.set('type', type);
+  if (year) params.set('year', year);
   const res = await fetch(`/api/search?${params}`);
   if (!res.ok) throw new Error('Search failed');
   return res.json();
@@ -99,30 +191,69 @@ async function loadCatalog() {
 
   try {
     let query = state.query.trim();
+    let yearArg = '';
 
-    // Trending: OMDb needs `s=`; reuse one seed across pages until the user searches again.
-    if (!query) {
-      if (!state.browseSeed) {
-        state.browseSeed =
-          DEFAULT_QUERIES[Math.floor(Math.random() * DEFAULT_QUERIES.length)];
+    if (!query && state.type === '') {
+      catalogHeading.textContent = `Trending Now (${TRENDING_BROWSE_YEAR})`;
+      if (state.page !== 1) state.page = 1;
+      const spotlight = await fetchSpotlightSummaries(spotlightIdsForTab());
+      setLoading(false);
+      const rows = spotlight.slice(0, 10);
+      if (!rows.length) {
+        renderGrid([]);
+        emptyState.hidden = false;
+      } else {
+        renderGrid(rows);
+        state.totalPages = 1;
+        updatePagination();
       }
+      return;
+    }
+
+    // Browse (no user query): franchise-style search + optional year for Movies/Series (OMDb has no popularity sort).
+    if (!query) {
+      if (!state.browseSeed) state.browseSeed = pickBrowseSeed();
       query = state.browseSeed;
-      catalogHeading.textContent = 'Trending Now';
+
+      if (state.type === 'movie') {
+        catalogHeading.textContent = 'Popular movies';
+      } else {
+        catalogHeading.textContent = 'Popular series';
+      }
     } else {
       catalogHeading.textContent = `Results for "${state.query}"`;
     }
 
-    const data = await searchMovies(query, state.type, state.page);
+    const spotlightPromise =
+      !query && state.page === 1
+        ? fetchSpotlightSummaries(spotlightIdsForTab())
+        : Promise.resolve([]);
+
+    const [data, spotlight] = await Promise.all([
+      searchMovies(query, state.type, state.page, yearArg),
+      spotlightPromise,
+    ]);
 
     setLoading(false);
 
     if (data.Response === 'False' || !data.Search?.length) {
-      renderGrid([]);
-      emptyState.hidden = false;
+      if (spotlight.length) {
+        renderGrid(spotlight);
+        state.totalPages = 1;
+        updatePagination();
+      } else {
+        renderGrid([]);
+        emptyState.hidden = false;
+      }
       return;
     }
 
-    renderGrid(data.Search);
+    let rows = data.Search;
+    if (spotlight.length) {
+      const seen = new Set(spotlight.map((i) => i.imdbID));
+      rows = [...spotlight, ...rows.filter((i) => !seen.has(i.imdbID))];
+    }
+    renderGrid(rows);
     const total = parseInt(String(data.totalResults).replace(/,/g, ''), 10);
     state.totalPages = Number.isFinite(total) && total > 0 ? Math.ceil(total / 10) : 1;
     updatePagination();
@@ -247,6 +378,7 @@ filterBtns.forEach(btn => {
     btn.classList.add('active');
     state.type = btn.dataset.type;
     state.page = 1;
+    state.browseSeed = '';
     loadCatalog();
   });
 });

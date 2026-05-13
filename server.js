@@ -29,13 +29,13 @@ async function omdbFetch(params) {
 
 /* ── Routes ───────────────────────────────────────────── */
 
-// Search: /api/search?q=batman&type=movie&page=1
+// Search: /api/search?q=batman&type=movie&page=1&year=2026
 app.get('/api/search', async (req, res) => {
-  const { q, type, page = '1' } = req.query;
+  const { q, type, page = '1', year } = req.query;
   if (!q) return res.status(400).json({ error: 'Query parameter "q" is required.' });
 
   try {
-    const data = await omdbFetch({ s: q, type, page });
+    const data = await omdbFetch({ s: q, type, page, y: year });
     res.json(data);
   } catch (err) {
     console.error('[/api/search]', err.message);
