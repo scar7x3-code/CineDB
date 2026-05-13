@@ -13,7 +13,10 @@
 
   <!-- ── Header ─────────────────────────────────────────── -->
   <header class="header">
-    <a href="/" class="logo">CINE<span>DB</span></a>
+    <a href="/" class="logo-link" aria-label="CineDB — Home">
+      <canvas class="logo-popcorn" width="48" height="48" aria-hidden="true"></canvas>
+      <span class="logo">CINE<span>DB</span></span>
+    </a>
 
     <div class="search-wrapper">
       <input
@@ -37,11 +40,13 @@
   <main class="main">
 
     <!-- Filters -->
-    <div class="filters">
-      <button class="filter-btn active" data-type="">Trending</button>
-      <button class="filter-btn" data-type="movie">Movies</button>
-      <button class="filter-btn" data-type="series">Series</button>
+    <div class="filters" role="group" aria-label="Catalog sections">
+      <button type="button" class="filter-btn active" data-type="">Trending</button>
+      <button type="button" class="filter-btn" data-type="movie">Movies</button>
+      <button type="button" class="filter-btn" data-type="series">Series</button>
     </div>
+
+    <p class="catalog-sub">Search any title, or use the tabs—your picks load in a snap.</p>
 
     <!-- Status / heading -->
     <p class="catalog-heading" id="catalogHeading"></p>
@@ -63,9 +68,9 @@
 
     <!-- Empty state -->
     <div class="empty-state" id="emptyState" hidden>
-      <span class="empty-icon">⌀</span>
-      <p>No results found.</p>
-      <small>Try a different title or keyword.</small>
+      <span class="empty-icon" aria-hidden="true">🍿</span>
+      <p>Nothing turned up</p>
+      <small>Try another spelling, a shorter word, or switch tabs.</small>
     </div>
 
     <!-- Pagination -->
@@ -81,6 +86,7 @@
   </footer>
 
   <script src="js/escape.js"></script>
+  <script src="js/logo-canvas.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

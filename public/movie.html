@@ -13,7 +13,10 @@
 
   <!-- ── Header ─────────────────────────────────────────── -->
   <header class="header">
-    <a href="/" class="logo">CINE<span>DB</span></a>
+    <a href="/" class="logo-link" aria-label="CineDB — Home">
+      <canvas class="logo-popcorn" width="48" height="48" aria-hidden="true"></canvas>
+      <span class="logo">CINE<span>DB</span></span>
+    </a>
     <div class="search-wrapper">
       <input
         type="text"
@@ -56,6 +59,7 @@
   </footer>
 
   <script src="js/escape.js"></script>
+  <script src="js/logo-canvas.js"></script>
   <script src="js/movie.js"></script>
 </body>
 </html>
