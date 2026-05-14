@@ -172,8 +172,20 @@
     draw(ctx);
   }
 
+  function updateFavicon() {
+    const favicon = document.querySelector('link[rel~="icon"]') || document.createElement('link');
+    favicon.rel = 'icon';
+    const canvas = document.createElement('canvas');
+    paint(canvas);
+    favicon.href = canvas.toDataURL('image/png');
+    if (!favicon.parentNode) {
+      document.head.appendChild(favicon);
+    }
+  }
+
   function init() {
     document.querySelectorAll('canvas.logo-popcorn').forEach(paint);
+    updateFavicon();
   }
 
   if (document.readyState === 'loading') {
