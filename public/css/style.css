@@ -13,6 +13,7 @@
   --accent:      #00e64d;
   --accent-dim:  rgba(0, 230, 77, 0.08);
   --accent-glow: rgba(0, 230, 77, 0.25);
+  --default-poster-pattern: url('./MVsw8Teu.png');
   --text:        #efefef;
   --text-muted:  #5a5a5a;
   --text-soft:   #999;
@@ -333,7 +334,7 @@ img { display: block; }
 .card-poster-wrap {
   position: relative;
   aspect-ratio: 2/3;
-  background: var(--surface-2);
+  background: var(--surface-2) var(--default-poster-pattern) center/140% no-repeat;
   overflow: hidden;
 }
 
@@ -353,6 +354,7 @@ img { display: block; }
   justify-content: center;
   color: var(--text-muted);
   font-size: 40px;
+  background: var(--surface) var(--default-poster-pattern) center/cover no-repeat;
 }
 
 .card-type-badge {
@@ -544,7 +546,7 @@ img { display: block; }
 
 .detail-no-poster {
   aspect-ratio: 2/3;
-  background: var(--surface);
+  background: var(--surface) var(--default-poster-pattern) center/cover no-repeat;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   display: flex;

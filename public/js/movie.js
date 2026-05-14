@@ -8,6 +8,7 @@
 const detailLoading = document.getElementById('detailLoading');
 const detailError   = document.getElementById('detailError');
 const detailContent = document.getElementById('detailContent');
+const fallbackPosterSvg = 'css/fb736350-dcb2-496c-99fb-ad6e69fea5c4.svg';
 
 /* ── Shared search bar (reuse app.js-style behavior) ────── */
 const searchInput = document.getElementById('searchInput');
@@ -172,7 +173,7 @@ function renderSuggestions(items) {
     const titleEsc = escapeHtml(item.Title);
     const yearEsc  = escapeHtml(item.Year);
     const typeEsc  = escapeHtml(item.Type);
-    const posterSrc = hasPoster ? escapeHtml(item.Poster) : 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><rect width=\'36\' height=\'52\' fill=\'%23181818\'/></svg>';
+    const posterSrc = hasPoster ? escapeHtml(item.Poster) : fallbackPosterSvg;
     li.innerHTML = `
       <img
         class="suggestion-poster"
