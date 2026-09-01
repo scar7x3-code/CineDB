@@ -82,10 +82,53 @@
     </div>
   </main>
 
+  <!-- ── Chat assistant ─────────────────────────────────── -->
+  <div class="chat-widget" id="chatWidget">
+    <button
+      type="button"
+      class="chat-toggle"
+      id="chatToggle"
+      aria-label="Abrir asistente de recomendaciones"
+      aria-expanded="false"
+      aria-controls="chatPanel"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
 
+    <section class="chat-panel" id="chatPanel" hidden aria-label="Asistente de recomendaciones">
+      <header class="chat-header">
+        <div>
+          <p class="chat-title">Recomendaciones</p>
+          <p class="chat-sub">Películas y series</p>
+        </div>
+        <button type="button" class="chat-close" id="chatClose" aria-label="Cerrar chat">×</button>
+      </header>
+
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+      <form class="chat-form" id="chatForm">
+        <textarea
+          id="chatInput"
+          class="chat-input"
+          rows="1"
+          placeholder="¿Qué quieres ver?"
+          maxlength="800"
+          autocomplete="off"
+        ></textarea>
+        <button type="submit" class="chat-send" id="chatSend" aria-label="Enviar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </form>
+    </section>
+  </div>
 
   <script src="js/escape.js"></script>
   <script src="js/logo-canvas.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
